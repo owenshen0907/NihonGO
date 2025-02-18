@@ -1,6 +1,6 @@
 'use client';
 import dynamic from 'next/dynamic';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './ChatArea.module.css';
 
 const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false });
@@ -10,16 +10,29 @@ interface Message {
     content: string;
 }
 
-export default function ChatArea() {
+interface ChatAreaProps {
+    onLatestChat?: (text: string) => void;
+}
+
+export default function ChatArea({ onLatestChat }: ChatAreaProps) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputValue, setInputValue] = useState('');
+
+    // 每次 messages 更新后，调用 onLatestChat 回调（只在最后一条消息为机器人回复时调用）
+    useEffect(() => {
+        if (onLatestChat && messages.length > 0) {
+            const last = messages[messages.length - 1];
+            if (last.sender === 'bot') {
+                onLatestChat(last.content);
+            }
+        }
+    }, [messages, onLatestChat]);
 
     const handleSend = async () => {
         if (!inputValue.trim()) return;
 
-        // 添加用户消息
         const userMessage: Message = { sender: 'user', content: inputValue };
-        setMessages(prev => [...prev, userMessage]);
+        setMessages((prev) => [...prev, userMessage]);
         const userText = inputValue;
         setInputValue('');
 
@@ -27,7 +40,11 @@ export default function ChatArea() {
             const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: userText }),
+                body: JSON.stringify({
+                    message: userText,
+                    // 直接使用配置文件中导入的值（在后端进行匹配配置）
+                    configKey: "STUDY_ASSISTANT"
+                }),
             });
 
             if (!response.ok || !response.body) {
@@ -44,11 +61,14 @@ export default function ChatArea() {
                 const { value, done: doneReading } = await reader.read();
                 done = doneReading;
                 const chunkValue = decoder.decode(value);
-                // 按行拆分数据
-                const lines = chunkValue.split('\n').filter(line => line.trim() !== '');
+                const lines = chunkValue.split('\n').filter((line) => line.trim() !== '');
                 for (const line of lines) {
                     if (line.startsWith('data: ')) {
                         const dataStr = line.replace('data: ', '');
+                        // 如果数据行中包含 “Copy to clipboard” 或不以 "{" 开头，则跳过
+                        if (dataStr.includes("Copy to clipboard") || !dataStr.trim().startsWith('{')) {
+                            continue;
+                        }
                         if (dataStr === '[DONE]') {
                             done = true;
                             break;
@@ -58,18 +78,17 @@ export default function ChatArea() {
                             const delta = json.choices[0]?.delta?.content;
                             if (delta) {
                                 botContent += delta;
-                                // 格式化处理：去掉多余的空白字符
                                 const formattedContent = botContent.replace(/\s+$/g, '');
-                                // 更新最后一条机器人消息
-                                setMessages(prev => {
+                                setMessages((prev) => {
                                     const last = prev[prev.length - 1];
+                                    let newMessages: Message[];
                                     if (last && last.sender === 'bot') {
-                                        const newMessages = [...prev];
+                                        newMessages = [...prev];
                                         newMessages[newMessages.length - 1] = { ...last, content: formattedContent };
-                                        return newMessages;
                                     } else {
-                                        return [...prev, { sender: 'bot', content: formattedContent }];
+                                        newMessages = [...prev, { sender: "bot", content: formattedContent }];
                                     }
+                                    return newMessages;
                                 });
                             }
                         } catch (err) {

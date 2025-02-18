@@ -1,22 +1,20 @@
-// src/app/api/chat/route.ts
 import { NextResponse } from 'next/server';
 import configurations from '@/config';
-
 interface RequestBody {
-    message: string;
+    content: string;
     configKey?: string;
 }
 
 export async function POST(req: Request) {
     try {
-        const { message, configKey } = (await req.json()) as RequestBody;
+        const { content, configKey } = (await req.json()) as RequestBody;
 
         // 根据 configKey 取配置，默认为 STEP_FUN
-        const config = configurations[configKey || 'STUDY_ASSISTANT'];
+        const config = configurations[configKey || 'GENERATE_NOTE'];
 
         const payload = {
             model: config.model,
-            stream: true,
+            stream: false,
             messages: [
                 {
                     role: "system",
@@ -24,7 +22,7 @@ export async function POST(req: Request) {
                 },
                 {
                     role: "user",
-                    content: message
+                    content: content
                 }
             ]
         };
@@ -42,13 +40,8 @@ export async function POST(req: Request) {
             return new Response("Error", { status: response.status });
         }
 
-        return new Response(response.body, {
-            headers: {
-                "Content-Type": "text/event-stream",
-                "Cache-Control": "no-cache",
-                "Connection": "keep-alive"
-            }
-        });
+        const data = await response.json();
+        return NextResponse.json(data.choices[0].message.content);
     } catch (error) {
         console.error("API error:", error);
         return new Response("Internal Server Error", { status: 500 });
