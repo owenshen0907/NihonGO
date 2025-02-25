@@ -1,4 +1,3 @@
-// src/app/components/GenerateNoteButton.tsx
 'use client';
 import React, { useState } from 'react';
 import styles from './GenerateNoteButton.module.css';
@@ -17,20 +16,39 @@ export default function GenerateNoteButton({ content, onGenerated }: GenerateNot
             setError('当前内容为空');
             return;
         }
+        // 从 sessionStorage 中取出 userData
+        const storedUserData = sessionStorage.getItem('userData');
+        if (!storedUserData) {
+            setError('请登录后重试');
+            return;
+        }
+        let userData;
+        try {
+            userData = JSON.parse(storedUserData);
+        } catch (err) {
+            setError('请登录后重试');
+            return;
+        }
+        if (!userData?.name) {
+            setError('请登录后重试');
+            return;
+        }
+        const userName = userData.name;
+
         setLoading(true);
         setError(null);
         try {
             const res = await fetch('/api/notes/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                // 传入 configKey:"GENERATE_NOTE"
-                body: JSON.stringify({ content, configKey: "GENERATE_NOTE" }),
+                // 将 userName 一并传递到后端
+                body: JSON.stringify({ content, configKey: "GENERATE_NOTE", userName }),
             });
             if (!res.ok) {
                 throw new Error(`请求失败：${res.status}`);
             }
             const result = await res.json();
-            // JSON 格式校验
+            // 解析返回的 JSON 数据
             const rawJsonString = typeof result === 'string' ? result : result.answer;
             let parsedData;
             try {
