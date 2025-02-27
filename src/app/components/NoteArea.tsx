@@ -8,8 +8,8 @@ export interface WordNote {
 }
 
 export interface GrammarNote {
-    grammar: string;
-    detail: string;
+    grammar_formula: string;
+    explanation: string;
 }
 
 export interface NoteData {
@@ -91,7 +91,7 @@ export default function NoteArea({ noteData, pageId }: NoteAreaProps) {
                         {noteData?.grammarNotes.map((note, index) => (
                             <NoteCard
                                 key={index}
-                                title={`${note.grammar} (${note.detail})`}
+                                title={`${note.grammar_formula} (${note.explanation})`}
                                 isGrammar={true}
                             />
                         ))}

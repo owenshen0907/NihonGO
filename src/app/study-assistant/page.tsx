@@ -6,9 +6,7 @@ import NoteArea, { NoteData } from '../components/NoteArea';
 import GenerateNoteButton from '../components/GenerateNoteButton';
 
 export default function StudyAssistantPage() {
-    // 定义所有 hook
-    const [hydrated, setHydrated] = useState(false);
-    const [latestChat, setLatestChat] = useState<string>('');
+    // 初始化时尝试从 localStorage 读取缓存
     const [noteData, setNoteData] = useState<NoteData | undefined>(() => {
         if (typeof window !== 'undefined') {
             const cached = localStorage.getItem('noteData');
@@ -22,20 +20,23 @@ export default function StudyAssistantPage() {
         }
         return undefined;
     });
+    const [hydrated, setHydrated] = useState(false);
+    const [latestChat, setLatestChat] = useState<string>('');
 
-    // 挂载后设置 hydrated 状态
+    // 组件挂载后设置 hydrated 状态
     useEffect(() => {
         setHydrated(true);
     }, []);
 
-    // 当 noteData 更新时，同步保存到 localStorage
+    // 当 noteData 更新时，将数据保存到 localStorage，并打印日志确认更新
     useEffect(() => {
+        console.log('noteData updated: ', noteData);
         if (noteData) {
             localStorage.setItem('noteData', JSON.stringify(noteData));
         }
     }, [noteData]);
 
-    // 条件渲染（所有 hook 均已调用）
+    // 未挂载前不渲染
     if (!hydrated) return null;
 
     return (
@@ -52,7 +53,10 @@ export default function StudyAssistantPage() {
                     <div className={styles.floatingButton}>
                         <GenerateNoteButton
                             content={latestChat}
-                            onGenerated={(data: any) => setNoteData(data)}
+                            onGenerated={(data: any) => {
+                                console.log('Generated note data: ', data);
+                                setNoteData(data);
+                            }}
                         />
                     </div>
                 </div>

@@ -1,10 +1,13 @@
-// api/notes/generate.ts
 import { config } from 'dotenv';
 config({ path: '.env.local' });
 import { NextResponse } from 'next/server';
 import { Client } from 'pg';
 import configurations from '@/config';
 import { processWordNotes } from '@/db/wordReportRepository';
+import {
+    processGrammarNotes,
+    // 如果 getEmbedding 也需要使用，可以从 grammarReportRepository 导入，也可以单独定义
+} from '@/db/grammarReportRepository';
 
 interface RequestBody {
     content: string;
@@ -30,7 +33,7 @@ export async function POST(req: Request) {
         await client.connect();
         console.log('已连接到 PostgreSQL 数据库。');
 
-        // 调用外部 API 生成笔记
+        // 调用外部 API 生成笔记（包含 wordNotes 和 grammarNotes）
         const configItem = configurations[configKey || 'GENERATE_NOTE'];
         const payload = {
             model: configItem.model,
@@ -62,7 +65,6 @@ export async function POST(req: Request) {
         // 针对 wordNotes 数组进行处理
         if (noteData.wordNotes && Array.isArray(noteData.wordNotes)) {
             const processedNotes = await processWordNotes(client, userName, noteData.wordNotes);
-            // 将补全后的字段写回每个 wordNote 中
             for (let i = 0; i < noteData.wordNotes.length; i++) {
                 noteData.wordNotes[i].id = processedNotes[i].id;
                 noteData.wordNotes[i].listening = processedNotes[i].listening;
@@ -72,7 +74,13 @@ export async function POST(req: Request) {
             }
         }
 
-        // 此处仅处理 wordNotes，grammarNotes 部分后续实现类似逻辑
+        // 针对 grammarNotes 数组进行处理
+        if (noteData.grammarNotes && Array.isArray(noteData.grammarNotes)) {
+            const processedGrammarNotes = await processGrammarNotes(client, userName, noteData.grammarNotes);
+            // 将处理结果覆盖原有 grammarNotes
+            noteData.grammarNotes = processedGrammarNotes;
+        }
+
         return NextResponse.json(noteData);
     } catch (error) {
         console.error('API error:', error);

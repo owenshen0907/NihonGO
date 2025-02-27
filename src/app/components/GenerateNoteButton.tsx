@@ -47,17 +47,9 @@ export default function GenerateNoteButton({ content, onGenerated }: GenerateNot
             if (!res.ok) {
                 throw new Error(`请求失败：${res.status}`);
             }
+            // 接口返回的数据已经是 JSON 对象，直接传递给 onGenerated
             const result = await res.json();
-            // 解析返回的 JSON 数据
-            const rawJsonString = typeof result === 'string' ? result : result.answer;
-            let parsedData;
-            try {
-                parsedData = JSON.parse(rawJsonString);
-            } catch (err) {
-                console.error('JSON parse error:', err);
-                return;
-            }
-            onGenerated(parsedData);
+            onGenerated(result);
         } catch (err: any) {
             setError(err.message);
         } finally {

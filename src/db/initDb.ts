@@ -39,8 +39,10 @@ const initDb = async () => {
         grammar_category_01 TEXT,
         grammar_category_02 TEXT,
         explanation TEXT,
+        example_sentence TEXT DEFAULT NULL,
         lesson INT NOT NULL,
-        level INTEGER CHECK (level BETWEEN 1 AND 5)
+        level INTEGER CHECK (level BETWEEN 1 AND 5),
+        embedding vector(1536)
       );
     `);
         console.log("语法表创建成功。");
