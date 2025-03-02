@@ -1,15 +1,22 @@
+// ./src/app/study-assistant/page.tsx
 'use client';
 import React, { useState, useEffect } from 'react';
 import styles from './page.module.css';
 import ChatArea from './chat/ChatArea';
-import NoteArea, { NoteData } from '../components/NoteArea';
+import { NoteData } from '@/app/components/apiUtils';
+import NoteArea from '../components/NoteArea'
 import GenerateNoteButton from '../components/GenerateNoteButton';
+
+
+// 从 sessionStorage 获取 username
+const userData = typeof window !== 'undefined' ? JSON.parse(sessionStorage.getItem('userData') || '{}') : {};
+const username = userData.name || 'defaultUser';
 
 export default function StudyAssistantPage() {
     // 初始化时尝试从 localStorage 读取缓存
     const [noteData, setNoteData] = useState<NoteData | undefined>(() => {
         if (typeof window !== 'undefined') {
-            const cached = localStorage.getItem('noteData');
+            const cached = localStorage.getItem(`notes_${username}`);
             if (cached) {
                 try {
                     return JSON.parse(cached);
@@ -30,9 +37,9 @@ export default function StudyAssistantPage() {
 
     // 当 noteData 更新时，将数据保存到 localStorage，并打印日志确认更新
     useEffect(() => {
-        console.log('noteData updated: ', noteData);
+        console.log('notes_${username} updated: ', noteData);
         if (noteData) {
-            localStorage.setItem('noteData', JSON.stringify(noteData));
+            localStorage.setItem(`notes_${username}`, JSON.stringify(noteData));
         }
     }, [noteData]);
 
@@ -61,6 +68,7 @@ export default function StudyAssistantPage() {
                     </div>
                 </div>
                 <div className={styles.notesColumn}>
+                    {/* 传递 pageId 用来判断使用哪种维度参数 */}
                     <NoteArea pageId="study-assistant" noteData={noteData} />
                 </div>
             </div>

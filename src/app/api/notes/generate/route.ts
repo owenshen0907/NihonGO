@@ -34,6 +34,8 @@ export async function POST(req: Request) {
         console.log('已连接到 PostgreSQL 数据库。');
 
         // 调用外部 API 生成笔记（包含 wordNotes 和 grammarNotes）
+        // GENERATE_WORD_EXTENSION
+        // GENERATE_GRAMMAR_EXTENSION
         const configItem = configurations[configKey || 'GENERATE_NOTE'];
         const payload = {
             model: configItem.model,
@@ -66,11 +68,7 @@ export async function POST(req: Request) {
         if (noteData.wordNotes && Array.isArray(noteData.wordNotes)) {
             const processedNotes = await processWordNotes(client, userName, noteData.wordNotes);
             for (let i = 0; i < noteData.wordNotes.length; i++) {
-                noteData.wordNotes[i].id = processedNotes[i].id;
-                noteData.wordNotes[i].listening = processedNotes[i].listening;
-                noteData.wordNotes[i].speaking = processedNotes[i].speaking;
-                noteData.wordNotes[i].writing = processedNotes[i].writing;
-                noteData.wordNotes[i].reading = processedNotes[i].reading;
+                noteData.wordNotes[i] = processedNotes[i];
             }
         }
 

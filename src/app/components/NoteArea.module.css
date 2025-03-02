@@ -58,7 +58,7 @@
     background-color: #fff;
     border: 1px solid #ddd;
     border-radius: 8px;
-    width: 400px; /* 总宽度：20 + 300 + 40 */
+    width: 400px; /* 总宽度：20 + 322 + 40 */
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     transition: box-shadow 0.2s;
 }
@@ -70,11 +70,11 @@
 .cardGrid {
     display: grid;
     grid-template-columns: 20px 322px 40px;
-    align-items: stretch; /* 让每个单元格拉伸 */
+    align-items: stretch;
     gap: 0.5rem;
 }
 
-/* 左侧选择区域 */
+/* 左侧选择区域（保留原样） */
 .selectionArea {
     width: 20px;
     height: 100%;
@@ -106,61 +106,44 @@
     overflow: hidden;
 }
 
-/* 原有的 .cardTitle 保持不变，单词笔记依旧单行显示 */
-.cardTitle {
-    margin: 0;
+/* 主要文本 */
+.primaryText {
     font-size: 1.1rem;
     font-weight: bold;
     color: #0070f3;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
-/* 新增的 .grammarTitle 用于语法笔记，允许多行换行并超出时显示省略号 */
-.grammarTitle {
-    margin: 0;
-    font-size: 1.1rem;
-    font-weight: bold;
-    color: #0070f3;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3; /* 根据需要调整最大行数 */
-    overflow: hidden;
-    word-break: break-word; /* 可选：确保长单词也能换行 */
-}
-
-.cardSubtext {
-    margin: 0.2rem 0 0 0;
+/* 次要文本 */
+.secondaryText {
     font-size: 0.9rem;
-    color: #888;
+    color: #555;
 }
+
+/* 熟悉度小块已移除 */
 
 /* 右侧扩展区域 */
 .expandArea {
     width: 40px;
     display: flex;
-    align-items: stretch; /* 拉伸到行高 */
+    align-items: center;
     justify-content: center;
     cursor: pointer;
 }
 
-/* 扩展按钮：占满扩展区域 */
+/* 修改扩展按钮：使用固定高度（与左侧选择区域一致），不使用垂直书写 */
 .expandButton {
     width: 100%;
-    /*height: 100%;*/
+    height: 100%;
     border: 1px solid #0070f3;
     border-top-right-radius: 7px;
     border-bottom-right-radius: 7px;
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
-    background-color: #0070f3; /* 默认蓝色背景 */
+    background-color: #0070f3;
     color: #fff;
     font-size: 0.9rem;
     cursor: pointer;
     transition: background-color 0.2s, color 0.2s;
-    writing-mode: vertical-rl;
-    text-orientation: upright;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -169,15 +152,50 @@
 .expandButton:hover {
     background-color: #005bb5;
 }
-/* 包裹卡片内容和扩展按钮的整体布局 */
-.cardContentWrapper {
+
+/* Modal 样式 */
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
+    z-index: 1000;
 }
 
-/* 如果使用 .cardText 作为中间内容区域 */
-.cardText {
-    flex: 1;
-    overflow: hidden;
+.modalContent {
+    background: #fff;
+    padding: 1rem;
+    border-radius: 8px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80%;
+    overflow-y: auto;
+    position: relative;
+}
+
+.modalClose {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    border: none;
+    background: transparent;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+/* 扩展内容区域（原来内联扩展区域已移除） */
+.extensionContent {
+    display: none;
+}
+
+/* 卡片行 */
+.cardRow {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.3rem;
 }

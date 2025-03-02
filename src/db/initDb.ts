@@ -26,7 +26,8 @@ const initDb = async () => {
         romaji TEXT,
         pos TEXT,
         level INTEGER CHECK (level BETWEEN 1 AND 5),
-        translation TEXT
+        translation TEXT,
+        extension JSONB DEFAULT '{}'::jsonb
       );
     `);
         console.log("单词表创建成功。");
@@ -42,7 +43,8 @@ const initDb = async () => {
         example_sentence TEXT DEFAULT NULL,
         lesson INT NOT NULL,
         level INTEGER CHECK (level BETWEEN 1 AND 5),
-        embedding vector(1536)
+        embedding vector(1536),
+        extension JSONB DEFAULT '{}'::jsonb
       );
     `);
         console.log("语法表创建成功。");
@@ -69,8 +71,7 @@ const initDb = async () => {
         dimension TEXT CHECK (dimension IN ('听', '说', '写', '阅')),
         study_status INTEGER CHECK (study_status IN (1, -1)),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES user_info(user_id),
-        FOREIGN KEY (word_id) REFERENCES words(id)
+        FOREIGN KEY (user_id) REFERENCES user_info(user_id)
       );
     `);
         console.log("单词学习日志表创建成功。");
@@ -84,8 +85,7 @@ const initDb = async () => {
         dimension TEXT CHECK (dimension IN ('听', '说', '写', '阅')),
         study_status INTEGER CHECK (study_status IN (1, -1)),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES user_info(user_id),
-        FOREIGN KEY (grammar_id) REFERENCES grammar(id)
+        FOREIGN KEY (user_id) REFERENCES user_info(user_id)
       );
     `);
         console.log("语法学习日志表创建成功。");
