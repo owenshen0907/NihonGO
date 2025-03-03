@@ -15,7 +15,7 @@ const ExtensionButton: React.FC<ExtensionButtonProps> = ({ note, isGrammar, onUp
     const [extensionContent, setExtensionContent] = useState(note.extension);
 
     const handleExpand = async () => {
-        // 判断 extension 是否为空（falsy 或空对象）
+        // 判断 extension 是否为空（如果是空对象或 falsy）
         let isEmpty = !extensionContent || (typeof extensionContent === 'object' && Object.keys(extensionContent).length === 0);
         if (isEmpty) {
             try {
@@ -27,7 +27,7 @@ const ExtensionButton: React.FC<ExtensionButtonProps> = ({ note, isGrammar, onUp
                 const userData = JSON.parse(storedUserData);
                 const userName = userData.name;
                 const noteType = isGrammar ? 'grammar' : 'word';
-                // 如果是单词，则拼接 kanji/kana，例如 "勉強/べんきょう"
+                // 如果是单词，则拼接 kanji/kana，如 "勉強/べんきょう"
                 const content = noteType === 'word'
                     ? `${(note as WordNote).kanji}/${(note as WordNote).kana}`
                     : (note as GrammarNote).grammar_formula;
@@ -48,13 +48,8 @@ const ExtensionButton: React.FC<ExtensionButtonProps> = ({ note, isGrammar, onUp
                     alert('生成扩展内容失败');
                     return;
                 }
-                const rawText = await res.text();
-                console.log("ExtensionButton 原始响应文本:", rawText);
-                const data = JSON.parse(rawText);
-                console.log("ExtensionButton 解析后的扩展数据:", data);
-                const generatedContent = data.choices[0].message.content;
-                const newExtension = JSON.parse(generatedContent);
-                console.log("ExtensionButton 最终扩展内容:", newExtension);
+                const newExtension = await res.json();
+                console.log("ExtensionButton 新扩展内容:", newExtension);
                 setExtensionContent(newExtension);
                 onUpdateExtension(note.id, newExtension);
             } catch (error) {
