@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import styles from './NoteArea.module.css';
-import { WordNote, GrammarNote, NoteData, NoteItem, familiarityText } from '@/app/components/apiUtils';
+import { WordNote, GrammarNote, NoteData, NoteItem } from '@/app/components/apiUtils';
 import ExtensionButton from '@/app/components/ExtensionButton'; // 调整路径，根据你的目录结构
 
 /** NoteCard 组件 */
@@ -73,7 +73,9 @@ export default function NoteArea({ noteData, pageId }: NoteAreaProps) {
     // 将 props.noteData 拷贝到本地 state，方便更新 extension 后写入 localStorage
     const [noteDataState, setNoteDataState] = useState<NoteData | undefined>(noteData);
     const [hydrated, setHydrated] = useState(false);
-
+    React.useEffect(() => {
+        setNoteDataState(noteData);
+    }, [noteData]);
     React.useEffect(() => {
         setHydrated(true);
     }, []);
@@ -89,7 +91,7 @@ export default function NoteArea({ noteData, pageId }: NoteAreaProps) {
 
     React.useEffect(() => {
         if (noteDataState && hydrated) {
-            localStorage.setItem(`notes_${username}`, JSON.stringify(noteDataState));
+            localStorage.setItem(`note_${username}`, JSON.stringify(noteDataState));
         }
     }, [noteDataState, hydrated, username]);
 
@@ -108,10 +110,6 @@ export default function NoteArea({ noteData, pageId }: NoteAreaProps) {
             grammarNotes: updatedGrammarNotes,
         });
     };
-
-    // dimension 和 study_status 参数未在这里使用，但保留
-    const dimension = pageId === 'study-assistant' ? '阅' : 'default';
-    const study_status = pageId === 'study-assistant' ? 1 : 0;
 
     if (!hydrated) return null;
 

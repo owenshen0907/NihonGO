@@ -16,7 +16,7 @@ export default function StudyAssistantPage() {
     // 初始化时尝试从 localStorage 读取缓存
     const [noteData, setNoteData] = useState<NoteData | undefined>(() => {
         if (typeof window !== 'undefined') {
-            const cached = localStorage.getItem(`notes_${username}`);
+            const cached = localStorage.getItem(`note_${username}`);
             if (cached) {
                 try {
                     return JSON.parse(cached);
@@ -35,13 +35,12 @@ export default function StudyAssistantPage() {
         setHydrated(true);
     }, []);
 
-    // 当 noteData 更新时，将数据保存到 localStorage，并打印日志确认更新
     useEffect(() => {
-        console.log('notes_${username} updated: ', noteData);
+        console.log(`note_${username} updated: `, noteData);
         if (noteData) {
-            localStorage.setItem(`notes_${username}`, JSON.stringify(noteData));
+            localStorage.setItem(`note_${username}`, JSON.stringify(noteData));
         }
-    }, [noteData]);
+    }, [noteData, username]);
 
     // 未挂载前不渲染
     if (!hydrated) return null;
