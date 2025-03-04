@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './ExtensionButton.module.css';
 import ExtensionDisplay from './ExtensionDisplay';
 import { WordNote, GrammarNote, NoteItem } from '@/app/components/apiUtils';
@@ -14,9 +14,16 @@ const ExtensionButton: React.FC<ExtensionButtonProps> = ({ note, isGrammar, onUp
     const [modalOpen, setModalOpen] = useState(false);
     const [extensionContent, setExtensionContent] = useState(note.extension);
 
+    // 当 note.extension 更新时，同步更新组件的 state
+    useEffect(() => {
+        setExtensionContent(note.extension);
+    }, [note.extension]);
+
     const handleExpand = async () => {
         // 判断 extension 是否为空（如果是空对象或 falsy）
-        let isEmpty = !extensionContent || (typeof extensionContent === 'object' && Object.keys(extensionContent).length === 0);
+        let isEmpty =
+            !extensionContent ||
+            (typeof extensionContent === 'object' && Object.keys(extensionContent).length === 0);
         if (isEmpty) {
             try {
                 const storedUserData = sessionStorage.getItem('userData');
@@ -28,9 +35,10 @@ const ExtensionButton: React.FC<ExtensionButtonProps> = ({ note, isGrammar, onUp
                 const userName = userData.name;
                 const noteType = isGrammar ? 'grammar' : 'word';
                 // 如果是单词，则拼接 kanji/kana，如 "勉強/べんきょう"
-                const content = noteType === 'word'
-                    ? `${(note as WordNote).kanji}/${(note as WordNote).kana}`
-                    : (note as GrammarNote).grammar_formula;
+                const content =
+                    noteType === 'word'
+                        ? `${(note as WordNote).kanji}/${(note as WordNote).kana}`
+                        : (note as GrammarNote).grammar_formula;
                 const payload = {
                     content,
                     noteType,
