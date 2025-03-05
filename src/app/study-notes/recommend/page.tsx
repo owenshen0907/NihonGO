@@ -13,10 +13,10 @@ export default function RecommendNotesPage() {
     const [selectedTypes, setSelectedTypes] = useState<{ word: boolean; grammar: boolean }>({ word: true, grammar: true });
     // 听说写阅熟悉度筛选
     const [familiarityFilters, setFamiliarityFilters] = useState({
-        listening: new Set<string>(),
-        speaking: new Set<string>(),
-        writing: new Set<string>(),
-        reading: new Set<string>(),
+        listening: new Set<string>(['生疏', '模糊']),
+        speaking: new Set<string>(['生疏', '模糊']),
+        writing: new Set<string>(['生疏', '模糊']),
+        reading: new Set<string>(['生疏', '模糊']),
     });
 
     // 搜索文本
@@ -47,7 +47,7 @@ export default function RecommendNotesPage() {
                     setNotes(data);
                     localStorage.setItem(`notes_${username}`, JSON.stringify(data));
                     const merged = [...data.wordNotes, ...data.grammarNotes];
-                    setDisplayedNotes(merged.slice(0, 10));
+                    setDisplayedNotes(merged.slice(0, 10000));
                     setLoading(false);
                 })
                 .catch((err) => {

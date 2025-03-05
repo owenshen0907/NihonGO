@@ -126,3 +126,18 @@
     border: none;
     cursor: pointer;
 }
+/* 新增：用于显示听、说、写、阅的标签 */
+.dimensionLabel {
+    display: inline-block;
+    width: 1.5rem; /* 根据需要调整宽度 */
+    font-weight: bold;
+    text-align: center;
+    margin-right: 0.5rem;
+}
+/* 新增：用于显示维度图标 */
+.dimensionIcon {
+    display: inline-block;
+    width: 1.5rem;      /* 可根据需要调整 */
+    text-align: center;
+    font-size: 1.2rem;  /* 图标大小 */
+}

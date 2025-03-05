@@ -1,9 +1,7 @@
 'use client';
 import React from 'react';
 import leftStyles from './recommendLeftPanel.module.css';
-
-import {NoteData,NoteItem,familiarityText,isGrammarNote} from "@/app/components/apiUtils";
-
+import { NoteData, NoteItem, familiarityText, isGrammarNote } from "@/app/components/apiUtils";
 
 interface LeftPanelProps {
     notes: NoteData;
@@ -15,12 +13,14 @@ interface LeftPanelProps {
         writing: Set<string>;
         reading: Set<string>;
     };
-    setFamiliarityFilters: React.Dispatch<React.SetStateAction<{
-        listening: Set<string>;
-        speaking: Set<string>;
-        writing: Set<string>;
-        reading: Set<string>;
-    }>>;
+    setFamiliarityFilters: React.Dispatch<
+        React.SetStateAction<{
+            listening: Set<string>;
+            speaking: Set<string>;
+            writing: Set<string>;
+            reading: Set<string>;
+        }>
+    >;
     searchText: string;
     setSearchText: React.Dispatch<React.SetStateAction<string>>;
     previewResults: NoteItem[];
@@ -42,18 +42,27 @@ export default function RecommendLeftPanel(props: LeftPanelProps) {
         addNoteToDisplay,
     } = props;
 
-    // 切换单词/语法选择（已在之前示例中实现）
+    // 更新后的类型切换逻辑
     const toggleType = (type: 'word' | 'grammar') => {
         setSelectedTypes((prev) => {
-            // 至少有一个必须选中
-            if (prev[type] && !prev[type === 'word' ? 'grammar' : 'word']) {
-                return prev;
+            const other = type === 'word' ? 'grammar' : 'word';
+            if (prev.word && prev.grammar) {
+                // 两个都选中，点击一个则取消该项
+                return { ...prev, [type]: false };
+            } else if (prev[type] && !prev[other]) {
+                // 只有当前选中，点击已选中的则切换为另一项
+                return type === 'word' ? { word: false, grammar: true } : { word: true, grammar: false };
+            } else if (!prev[type] && prev[other]) {
+                // 只有另一项选中，点击未选中的则把其选中（结果为两个都选中）
+                return { word: true, grammar: true };
+            } else {
+                // 万一两个都未选中，则选中点击项
+                return { ...prev, [type]: true };
             }
-            return { ...prev, [type]: !prev[type] };
         });
     };
 
-    // 切换熟悉度过滤（每个按钮独立）
+    // 切换熟悉度过滤（保持原有逻辑）
     const toggleFamiliarity = (
         dimension: 'listening' | 'speaking' | 'writing' | 'reading',
         levelText: string
@@ -66,7 +75,7 @@ export default function RecommendLeftPanel(props: LeftPanelProps) {
         });
     };
 
-    // 执行搜索：同之前逻辑
+    // 执行搜索：保持原有逻辑
     const handleSearch = () => {
         let results: NoteItem[] = [];
         if (selectedTypes.word) {
@@ -102,9 +111,8 @@ export default function RecommendLeftPanel(props: LeftPanelProps) {
 
     return (
         <div className={leftStyles.leftPanel}>
-            {/* 类型选择区域（大按钮形式） */}
+            {/* 去掉了“类型选择”文字 */}
             <div className={leftStyles.filterSection}>
-                <h3>类型选择</h3>
                 <div className={leftStyles.toggleGroup}>
                     <div
                         className={`${leftStyles.toggleButton} ${leftStyles.leftButton} ${selectedTypes.word ? leftStyles.wordSelected : ''}`}
@@ -120,59 +128,70 @@ export default function RecommendLeftPanel(props: LeftPanelProps) {
                     </div>
                 </div>
             </div>
+            {(['listening', 'speaking', 'writing', 'reading'] as const).map((dim) => {
+                // 定义每个维度的图标和提示文字
+                const icons: Record<typeof dim, { icon: string; title: string }> = {
+                    listening: { icon: '👂', title: '听力' },
+                    speaking: { icon: '💬', title: '口语' },
+                    writing:  { icon: '✏️', title: '写作' },
+                    reading:  { icon: '👁️', title: '阅读' },
+                };
+                const { icon, title } = icons[dim];
 
-            {/* 各维度熟悉度筛选，每个维度为一组 */}
-            {(['listening', 'speaking', 'writing', 'reading'] as const).map((dim) => (
-                <div key={dim} className={leftStyles.filterSection}>
-                    <h3>{dim === 'listening' ? '听' : dim === 'speaking' ? '说' : dim === 'writing' ? '写' : '阅'}</h3>
-                    <div className={leftStyles.familiarityGroup}>
-                        <button
-                            className={`${leftStyles.familiarityButton} ${leftStyles.leftButton}`}
-                            style={{
-                                backgroundColor: familiarityFilters[dim].has('生疏') ? '#6C757D' : '#fff',
-                                color: familiarityFilters[dim].has('生疏') ? '#fff' : '#000',
-                            }}
-                            onClick={() => toggleFamiliarity(dim, '生疏')}
-                        >
-                            生疏
-                        </button>
-                        <button
-                            className={leftStyles.familiarityButton}
-                            style={{
-                                backgroundColor: familiarityFilters[dim].has('模糊') ? '#FFC107' : '#fff',
-                                color: familiarityFilters[dim].has('模糊') ? '#fff' : '#000',
-                            }}
-                            onClick={() => toggleFamiliarity(dim, '模糊')}
-                        >
-                            模糊
-                        </button>
-                        <button
-                            className={leftStyles.familiarityButton}
-                            style={{
-                                backgroundColor: familiarityFilters[dim].has('熟悉') ? '#20C997' : '#fff',
-                                color: familiarityFilters[dim].has('熟悉') ? '#fff' : '#000',
-                            }}
-                            onClick={() => toggleFamiliarity(dim, '熟悉')}
-                        >
-                            熟悉
-                        </button>
-                        <button
-                            className={`${leftStyles.familiarityButton} ${leftStyles.rightButton}`}
-                            style={{
-                                backgroundColor: familiarityFilters[dim].has('精通') ? '#2A3F8F' : '#fff',
-                                color: familiarityFilters[dim].has('精通') ? '#fff' : '#000',
-                            }}
-                            onClick={() => toggleFamiliarity(dim, '精通')}
-                        >
-                            精通
-                        </button>
+                return (
+                    <div key={dim} className={leftStyles.filterSection}>
+                        <div className={leftStyles.familiarityGroup}>
+                            {/* 显示图标，同时用 title 提示具体维度 */}
+                            <span className={leftStyles.dimensionIcon} title={title}>
+          {icon}
+        </span>
+                            <button
+                                className={`${leftStyles.familiarityButton} ${leftStyles.leftButton}`}
+                                style={{
+                                    backgroundColor: familiarityFilters[dim].has('生疏') ? '#6C757D' : '#fff',
+                                    color: familiarityFilters[dim].has('生疏') ? '#fff' : '#000',
+                                }}
+                                onClick={() => toggleFamiliarity(dim, '生疏')}
+                            >
+                                生疏
+                            </button>
+                            <button
+                                className={leftStyles.familiarityButton}
+                                style={{
+                                    backgroundColor: familiarityFilters[dim].has('模糊') ? '#FFC107' : '#fff',
+                                    color: familiarityFilters[dim].has('模糊') ? '#fff' : '#000',
+                                }}
+                                onClick={() => toggleFamiliarity(dim, '模糊')}
+                            >
+                                模糊
+                            </button>
+                            <button
+                                className={leftStyles.familiarityButton}
+                                style={{
+                                    backgroundColor: familiarityFilters[dim].has('熟悉') ? '#20C997' : '#fff',
+                                    color: familiarityFilters[dim].has('熟悉') ? '#fff' : '#000',
+                                }}
+                                onClick={() => toggleFamiliarity(dim, '熟悉')}
+                            >
+                                熟悉
+                            </button>
+                            <button
+                                className={`${leftStyles.familiarityButton} ${leftStyles.rightButton}`}
+                                style={{
+                                    backgroundColor: familiarityFilters[dim].has('精通') ? '#2A3F8F' : '#fff',
+                                    color: familiarityFilters[dim].has('精通') ? '#fff' : '#000',
+                                }}
+                                onClick={() => toggleFamiliarity(dim, '精通')}
+                            >
+                                精通
+                            </button>
+                        </div>
                     </div>
-                </div>
-            ))}
+                );
+            })}
 
-            {/* 搜索区域：输入框和搜索按钮组合 */}
+            {/* 搜索区域：只保留按钮内“搜索”两个字 */}
             <div className={leftStyles.filterSection}>
-                <h3>搜索</h3>
                 <div className={leftStyles.searchGroup}>
                     <input
                         type="text"

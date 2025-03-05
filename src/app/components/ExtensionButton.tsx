@@ -60,6 +60,22 @@ const ExtensionButton: React.FC<ExtensionButtonProps> = ({ note, isGrammar, onUp
                 console.log("ExtensionButton 新扩展内容:", newExtension);
                 setExtensionContent(newExtension);
                 onUpdateExtension(note.id, newExtension);
+                // 更新 localStorage
+                const storageKey = `notes_${userName}`;
+                const stored = localStorage.getItem(storageKey);
+                if (stored) {
+                    const noteData = JSON.parse(stored);
+                    // 根据你的数据结构更新对应 note 的 extension 字段
+                    // 这里假设 noteData 中有 wordNotes 和 grammarNotes 数组
+                    const updateNotes = (notes: NoteItem[]) =>
+                        notes.map(n => n.id === note.id ? { ...n, extension: newExtension } : n);
+                    const updatedData = {
+                        ...noteData,
+                        wordNotes: updateNotes(noteData.wordNotes || []),
+                        grammarNotes: updateNotes(noteData.grammarNotes || [])
+                    };
+                    localStorage.setItem(storageKey, JSON.stringify(updatedData));
+                }
             } catch (error) {
                 console.error("ExtensionButton 生成扩展内容错误", error);
             }
