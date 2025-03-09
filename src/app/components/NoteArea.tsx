@@ -1,66 +1,74 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './NoteArea.module.css';
 import { WordNote, GrammarNote, NoteData, NoteItem } from '@/app/components/apiUtils';
-import ExtensionButton from '@/app/components/ExtensionButton'; // 调整路径，根据你的目录结构
+import ExtensionButton from '@/app/components/ExtensionButton';
+import AddNoteButton from '@/app/components/AddNoteButton';
 
-/** NoteCard 组件 */
 interface NoteCardProps {
     note: NoteItem;
     isGrammar?: boolean;
     onUpdateExtension: (noteId: string, newExtension: any) => void;
+    // 用来将该笔记的选中状态传递给父组件
+    onSelectChange?: (noteId: string, selected: boolean) => void;
 }
-function NoteCard({ note, isGrammar, onUpdateExtension }: NoteCardProps) {
+function NoteCard({ note, isGrammar, onUpdateExtension, onSelectChange }: NoteCardProps) {
+    // 默认设为选中（true）
     const [selected, setSelected] = useState(true);
-    // 保留原有选择区域
+
+    const handleToggleSelect = () => {
+        const newSelected = !selected;
+        setSelected(newSelected);
+        if (onSelectChange) {
+            onSelectChange(note.id, newSelected);
+        }
+    };
 
     return (
-        <>
-            <div className={styles.card}>
-                <div className={styles.cardGrid}>
-                    {/* 左侧选择区域 */}
-                    <div
-                        className={`${styles.selectionArea} ${selected ? styles.selected : ''}`}
-                        onClick={() => setSelected(!selected)}
-                    ></div>
-                    {/* 中间内容区域 */}
-                    <div className={styles.cardContent}>
-                        {isGrammar ? (
-                            <>
-                                <div className={styles.cardRow}>
-                  <span className={styles.primaryText}>
-                    {(note as GrammarNote).grammar_formula}
-                  </span>
-                                </div>
-                                <div className={styles.cardRow}>
-                  <span className={styles.secondaryText}>
-                    {(note as GrammarNote).explanation}
-                  </span>
-                                </div>
-                            </>
-                        ) : (
-                            <>
-                                <div className={styles.cardRow}>
-                  <span className={styles.primaryText}>
-                    {(note as WordNote).kanji}
-                      {(note as WordNote).romaji ? ` (${(note as WordNote).romaji})` : ''}
-                  </span>
-                                </div>
-                                <div className={styles.cardRow}>
-                  <span className={styles.secondaryText}>
-                    {(note as WordNote).translation}
-                  </span>
-                                </div>
-                            </>
-                        )}
-                    </div>
-                    {/* 右侧扩展按钮使用独立组件 */}
-                    <div className={styles.expandArea}>
-                        <ExtensionButton note={note} isGrammar={isGrammar} onUpdateExtension={onUpdateExtension} />
-                    </div>
+        <div className={styles.card}>
+            <div className={styles.cardGrid}>
+                {/* 左侧选择区域 */}
+                <div
+                    className={`${styles.selectionArea} ${selected ? styles.selected : ''}`}
+                    onClick={handleToggleSelect}
+                ></div>
+                {/* 中间内容区域 */}
+                <div className={styles.cardContent}>
+                    {isGrammar ? (
+                        <>
+                            <div className={styles.cardRow}>
+                <span className={styles.primaryText}>
+                  {(note as GrammarNote).grammar_formula}
+                </span>
+                            </div>
+                            <div className={styles.cardRow}>
+                <span className={styles.secondaryText}>
+                  {(note as GrammarNote).explanation}
+                </span>
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <div className={styles.cardRow}>
+                <span className={styles.primaryText}>
+                  {(note as WordNote).kanji}
+                    {(note as WordNote).romaji ? ` (${(note as WordNote).romaji})` : ''}
+                </span>
+                            </div>
+                            <div className={styles.cardRow}>
+                <span className={styles.secondaryText}>
+                  {(note as WordNote).translation}
+                </span>
+                            </div>
+                        </>
+                    )}
+                </div>
+                {/* 右侧扩展按钮使用独立组件 */}
+                <div className={styles.expandArea}>
+                    <ExtensionButton note={note} isGrammar={isGrammar} onUpdateExtension={onUpdateExtension} />
                 </div>
             </div>
-        </>
+        </div>
     );
 }
 
@@ -73,10 +81,19 @@ export default function NoteArea({ noteData, pageId }: NoteAreaProps) {
     // 将 props.noteData 拷贝到本地 state，方便更新 extension 后写入 localStorage
     const [noteDataState, setNoteDataState] = useState<NoteData | undefined>(noteData);
     const [hydrated, setHydrated] = useState(false);
-    React.useEffect(() => {
+    // 分别维护单词和语法笔记的勾选状态（存储 note.id），初始时全部选中
+    const [selectedWordIds, setSelectedWordIds] = useState<string[]>([]);
+    const [selectedGrammarIds, setSelectedGrammarIds] = useState<string[]>([]);
+
+    useEffect(() => {
         setNoteDataState(noteData);
+        if (noteData) {
+            setSelectedWordIds(noteData.wordNotes.map(note => note.id));
+            setSelectedGrammarIds(noteData.grammarNotes.map(note => note.id));
+        }
     }, [noteData]);
-    React.useEffect(() => {
+
+    useEffect(() => {
         setHydrated(true);
     }, []);
 
@@ -89,7 +106,7 @@ export default function NoteArea({ noteData, pageId }: NoteAreaProps) {
         }
     }
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (noteDataState && hydrated) {
             localStorage.setItem(`note_${username}`, JSON.stringify(noteDataState));
         }
@@ -98,7 +115,6 @@ export default function NoteArea({ noteData, pageId }: NoteAreaProps) {
     // 回调函数：更新指定 note 的 extension 字段
     const handleUpdateExtension = (noteId: string, newExtension: any) => {
         if (!noteDataState) return;
-        // 更新单词与语法各自的记录
         const updatedWordNotes = noteDataState.wordNotes.map((w) =>
             w.id === noteId ? { ...w, extension: newExtension } : w
         );
@@ -111,6 +127,34 @@ export default function NoteArea({ noteData, pageId }: NoteAreaProps) {
         });
     };
 
+    // 处理单词笔记选择变化
+    const handleWordSelectChange = (noteId: string, selected: boolean) => {
+        if (selected) {
+            setSelectedWordIds((prev) => [...prev, noteId]);
+        } else {
+            setSelectedWordIds((prev) => prev.filter((id) => id !== noteId));
+        }
+    };
+
+    // 处理语法笔记选择变化
+    const handleGrammarSelectChange = (noteId: string, selected: boolean) => {
+        if (selected) {
+            setSelectedGrammarIds((prev) => [...prev, noteId]);
+        } else {
+            setSelectedGrammarIds((prev) => prev.filter((id) => id !== noteId));
+        }
+    };
+
+    // 添加笔记后的回调：清空对应的勾选状态（或保持当前选中状态，根据需要调整）
+    const handleAddNotes = (addedIds: string[], noteType: 'word' | 'grammar') => {
+        // 此处示例为添加成功后清空对应的勾选状态
+        if (noteType === 'word') {
+            setSelectedWordIds([]);
+        } else {
+            setSelectedGrammarIds([]);
+        }
+    };
+
     if (!hydrated) return null;
 
     return (
@@ -119,14 +163,22 @@ export default function NoteArea({ noteData, pageId }: NoteAreaProps) {
             <div className={styles.section}>
                 <div className={styles.sectionHeader}>
                     <h4>单词笔记</h4>
-                    <button className={styles.addNoteButton} onClick={() => { /* 添加单词笔记逻辑 */ }}>
-                        添加笔记
-                    </button>
+                    <AddNoteButton
+                        noteType="word"
+                        pageId={pageId}
+                        selectedIds={selectedWordIds}
+                        onAddNotes={handleAddNotes}
+                    />
                 </div>
                 {(noteDataState?.wordNotes?.length ?? 0) > 0 ? (
                     <div className={styles.cardsContainer}>
                         {noteDataState?.wordNotes.map((note, index) => (
-                            <NoteCard key={index} note={note} onUpdateExtension={handleUpdateExtension} />
+                            <NoteCard
+                                key={index}
+                                note={note}
+                                onUpdateExtension={handleUpdateExtension}
+                                onSelectChange={handleWordSelectChange}
+                            />
                         ))}
                     </div>
                 ) : (
@@ -138,14 +190,23 @@ export default function NoteArea({ noteData, pageId }: NoteAreaProps) {
             <div className={styles.section}>
                 <div className={styles.sectionHeader}>
                     <h4>语法笔记</h4>
-                    <button className={styles.addNoteButton} onClick={() => { /* 添加语法笔记逻辑 */ }}>
-                        添加笔记
-                    </button>
+                    <AddNoteButton
+                        noteType="grammar"
+                        pageId={pageId}
+                        selectedIds={selectedGrammarIds}
+                        onAddNotes={handleAddNotes}
+                    />
                 </div>
                 {(noteDataState?.grammarNotes?.length ?? 0) > 0 ? (
                     <div className={styles.cardsContainer}>
                         {noteDataState?.grammarNotes.map((note, index) => (
-                            <NoteCard key={index} note={note} isGrammar={true} onUpdateExtension={handleUpdateExtension} />
+                            <NoteCard
+                                key={index}
+                                note={note}
+                                isGrammar
+                                onUpdateExtension={handleUpdateExtension}
+                                onSelectChange={handleGrammarSelectChange}
+                            />
                         ))}
                     </div>
                 ) : (

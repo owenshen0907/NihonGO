@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import configurations from '@/config';
 
 interface RequestBody {
-    message: string;
+    message: Array<{ type: string; [key: string]: any }>;
     configKey?: string;
 }
 
