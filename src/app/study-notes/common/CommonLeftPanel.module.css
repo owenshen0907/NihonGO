@@ -1,0 +1,51 @@
+.leftPanel {
+    padding: 1rem;
+    border-right: 1px solid #ddd;
+    height: 100%;
+    overflow-y: auto;
+}
+.leftPanel h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+.leftPanel ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.directoryItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    cursor: pointer;
+}
+.directoryItem:hover {
+    color: #0070f3;
+}
+.icon {
+    margin-left: 0.5rem;
+    cursor: pointer;
+    font-size: 1rem;
+    color: #888;
+}
+.icon:hover {
+    color: #0070f3;
+}
+.optionMenu {
+    position: absolute;
+    top: 3rem;
+    right: 1rem;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 0.5rem;
+    z-index: 10;
+}
+.menuItem {
+    padding: 0.3rem 0.5rem;
+    cursor: pointer;
+}
+.menuItem:hover {
+    background-color: #f0f0f0;
+}

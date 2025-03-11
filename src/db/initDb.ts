@@ -89,6 +89,26 @@ const initDb = async () => {
       );
     `);
         console.log("语法学习日志表创建成功。");
+        // 创建语法学习日志表 (notes)
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS notes (
+                id VARCHAR(50) PRIMARY KEY,         -- 主键，可以考虑使用 UUID
+                title TEXT NOT NULL,                -- 笔记标题，必填
+                directory TEXT,                     -- 当前笔记所属目录名称
+                parent_directory TEXT,              -- 上级目录名称（如果存在）
+                summary TEXT,                       -- 概述
+                content JSONB,                      -- 笔记详细内容（JSON 格式，方便前端根据模板展示）
+                tags TEXT,                          -- 标签，逗号分隔（例如：语法,词汇,例句）
+                comments JSONB DEFAULT '[]'::jsonb,   -- 评论反馈，可存储评论数组
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- 创建时间
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- 更新时间
+                update_log TEXT,                    -- 更新内容说明
+                user_id VARCHAR(50) NOT NULL,       -- 用户ID，关联用户信息表
+                is_public BOOLEAN DEFAULT false,    -- 是否公开
+                FOREIGN KEY (user_id) REFERENCES user_info(user_id)
+                );
+`);
+        console.log("笔记表创建成功。");
 
         console.log("数据库表创建或验证成功。");
     } catch (error) {

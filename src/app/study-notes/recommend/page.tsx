@@ -1,9 +1,9 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './recommend.module.css';
 import RecommendLeftPanel from './RecommendLeftPanel';
 import RecommendRightPanel from './RecommendRightPanel';
-import {NoteData,NoteItem} from "@/app/components/apiUtils";
+import { NoteData, NoteItem } from "@/app/components/apiUtils";
 
 export default function RecommendNotesPage() {
     const [notes, setNotes] = useState<NoteData>({ wordNotes: [], grammarNotes: [] });
@@ -41,13 +41,18 @@ export default function RecommendNotesPage() {
             setDisplayedNotes(merged.slice(0, 10));
             setLoading(false);
         } else {
-            fetch(`/api/notes/queryNotes?userId=${username}`)
+            // 改为 POST 请求
+            fetch(`/api/notes/queryNotes`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: username, noteType: 'recommend' })
+            })
                 .then((res) => res.json())
                 .then((data: NoteData) => {
                     setNotes(data);
                     localStorage.setItem(`notes_${username}`, JSON.stringify(data));
                     const merged = [...data.wordNotes, ...data.grammarNotes];
-                    setDisplayedNotes(merged.slice(0, 10000));
+                    setDisplayedNotes(merged.slice(0, 10));
                     setLoading(false);
                 })
                 .catch((err) => {
