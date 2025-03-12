@@ -14,6 +14,7 @@
     margin: 0;
 }
 .directoryItem {
+    position: relative;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -32,19 +33,25 @@
 .icon:hover {
     color: #0070f3;
 }
+
+/* 操作菜单显示在当前目录项的小图标下方 */
 .optionMenu {
     position: absolute;
-    top: 3rem;
-    right: 1rem;
+    top: 100%; /* 菜单紧贴图标下方 */
+    right: 0;
+    margin-top: 4px;
     background: #fff;
     border: 1px solid #ccc;
     border-radius: 4px;
-    padding: 0.5rem;
+    padding: 0.3rem;
     z-index: 10;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 .menuItem {
     padding: 0.3rem 0.5rem;
+    font-size: 0.8rem;
     cursor: pointer;
+    white-space: nowrap;
 }
 .menuItem:hover {
     background-color: #f0f0f0;

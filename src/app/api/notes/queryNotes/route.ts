@@ -18,10 +18,6 @@ export async function POST(request: Request) {
         await client.connect();
         const safeUserId = userId.replace(/[^a-zA-Z0-9_]/g, '');
         if (noteType === 'common') {
-            // 查询通用笔记表（notes）
-            // const res = await client.query(`SELECT * FROM notes WHERE user_id = $1 ORDER BY created_at DESC`, [safeUserId]);
-            // await client.end();
-            // return NextResponse.json(res.rows);
             // 查询通用笔记表 notes
             const res = await client.query(
                 `SELECT * FROM notes WHERE user_id = $1 ORDER BY created_at DESC`,
