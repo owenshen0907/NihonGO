@@ -5,15 +5,17 @@ import { Client } from 'pg';
 interface RequestBody {
     operation: 'insert' | 'update' | 'delete';
     userId: string;
+    update_type?: 'content' | 'tags' | 'comments';
     note?: {
-        // id 不再需要传入
-        title: string;
+        // 对于更新操作，若 update_type === 'content'，需要 note.id
+        id?: string;
+        title?: string;
         directory?: string;
-        parent_directory?: string;
+        parent_directory: string;  // 必填
         summary?: string;
-        content: string; // 存储 Markdown 格式文本
+        content?: string; // Markdown 文本
         tags?: string;
-        comments?: any; // 传入对象数组，存为 JSONB
+        comments?: any; // JSONB 对象数组
         update_log?: string;
         is_public?: boolean;
     };
@@ -22,10 +24,19 @@ interface RequestBody {
 
 export async function POST(request: Request) {
     try {
-        const { operation, userId, note, noteId } = (await request.json()) as RequestBody;
+        const { operation, userId, note, noteId, update_type } = (await request.json()) as RequestBody;
         if (!userId) {
             return NextResponse.json({ error: '缺少 userId' }, { status: 400 });
         }
+        // 对于插入操作，note 必须存在且 parent_directory 必填
+        if (operation === 'insert' && (!note || !note.parent_directory)) {
+            return NextResponse.json({ error: '插入操作需要 parent_directory' }, { status: 400 });
+        }
+        // 对于更新操作，note 必须存在、包含 note.id 和 parent_directory
+        if (operation === 'update' && (!note || !note.id || !note.parent_directory)) {
+            return NextResponse.json({ error: '更新操作需要 note.id 和 parent_directory' }, { status: 400 });
+        }
+
         const client = new Client({
             connectionString: process.env.DATABASE_URL,
         });
@@ -33,66 +44,78 @@ export async function POST(request: Request) {
         const safeUserId = userId.replace(/[^a-zA-Z0-9_]/g, '');
 
         if (operation === 'insert') {
-            if (!note || !note.title || !note.content) {
-                await client.end();
-                return NextResponse.json({ error: '插入操作需要 title 和 content' }, { status: 400 });
-            }
             const query = `
-        INSERT INTO notes
-          (title, directory, parent_directory, summary, content, tags, comments, created_at, updated_at, update_log, user_id, is_public)
-        VALUES
-          ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, $8, $9, $10)
-        RETURNING *;
-      `;
+                INSERT INTO notes
+                (title, directory, parent_directory, summary, content, tags, comments, created_at, updated_at, update_log, user_id, is_public)
+                VALUES
+                    ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, $8, $9, $10)
+                    RETURNING *;
+            `;
             const values = [
-                note.title,
-                note.directory || null,
-                note.parent_directory || null,
-                note.summary || null,
-                note.content,
-                note.tags || null,
-                note.comments ? JSON.stringify(note.comments) : '[]',
-                note.update_log || null,
+                note?.title || null,
+                note?.directory || null,
+                note!.parent_directory,
+                note?.summary || null,
+                note?.content || null,
+                note?.tags || null,
+                note?.comments ? JSON.stringify(note.comments) : '[]',
+                note?.update_log || null,
                 safeUserId,
-                note.is_public !== undefined ? note.is_public : false,
+                note?.is_public !== undefined ? note.is_public : false,
             ];
             const res = await client.query(query, values);
             await client.end();
             return NextResponse.json({ note: res.rows[0] });
         } else if (operation === 'update') {
-            if (!note || !note.title || !note.content || !note.update_log || !('id' in note)) {
-                await client.end();
-                return NextResponse.json({ error: '更新操作需要 note.id、title 和 content' }, { status: 400 });
+            // 根据 update_type 区分更新类型
+            const type = update_type || 'content';
+            let query = '';
+            let values: any[] = [];
+            if (type === 'content') {
+                // 更新标题、概述和详细内容
+                query = `
+          UPDATE notes
+          SET title = $1,
+              summary = $2,
+              content = $3,
+              updated_at = CURRENT_TIMESTAMP
+          WHERE id = $4 AND user_id = $5
+          RETURNING *;
+        `;
+                values = [note?.title || null, note?.summary || null, note?.content || null, note!.id, safeUserId];
+            } else if (type === 'tags') {
+                // 仅更新标签
+                query = `
+          UPDATE notes
+          SET tags = $1,
+              updated_at = CURRENT_TIMESTAMP
+          WHERE id = $2 AND user_id = $3
+          RETURNING *;
+        `;
+                values = [note?.tags || null, note!.id, safeUserId];
+            } else if (type === 'comments') {
+                // 仅更新评论
+                query = `
+          UPDATE notes
+          SET comments = $1,
+              updated_at = CURRENT_TIMESTAMP
+          WHERE id = $2 AND user_id = $3
+          RETURNING *;
+        `;
+                values = [note?.comments ? JSON.stringify(note.comments) : '[]', note!.id, safeUserId];
+            } else {
+                // 默认处理 content 更新
+                query = `
+          UPDATE notes
+          SET title = $1,
+              summary = $2,
+              content = $3,
+              updated_at = CURRENT_TIMESTAMP
+          WHERE id = $4 AND user_id = $5
+          RETURNING *;
+        `;
+                values = [note?.title || null, note?.summary || null, note?.content || null, note!.id, safeUserId];
             }
-            // 此处假设 note 对象中仍包含 id，用于更新操作
-            const query = `
-                UPDATE notes
-                SET title = $1,
-                    directory = $2,
-                    parent_directory = $3,
-                    summary = $4,
-                    content = $5,
-                    tags = $6,
-                    comments = $7,
-                    updated_at = CURRENT_TIMESTAMP,
-                    update_log = $8,
-                    is_public = $9
-                WHERE id = $10 AND user_id = $11
-                    RETURNING *;
-            `;
-            const values = [
-                note.title,
-                note.directory || null,
-                note.parent_directory || null,
-                note.summary || null,
-                note.content,
-                note.tags || null,
-                note.comments ? JSON.stringify(note.comments) : '[]',
-                note.update_log || null,
-                note.is_public !== undefined ? note.is_public : false,
-                (note as any).id, // 更新时需要 note.id
-                safeUserId,
-            ];
             const res = await client.query(query, values);
             await client.end();
             return NextResponse.json({ note: res.rows[0] });
@@ -105,7 +128,6 @@ export async function POST(request: Request) {
             const values = [noteId, safeUserId];
             const res = await client.query(query, values);
             await client.end();
-            // return NextResponse.json({ deleted: res.rowCount > 0 });
             return NextResponse.json({ deleted: (res.rowCount ?? 0) > 0 });
         } else {
             await client.end();
