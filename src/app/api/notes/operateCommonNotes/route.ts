@@ -76,6 +76,7 @@ export async function POST(request: Request) {
                 query = `
           UPDATE notes
           SET title = $1,
+              directory = $1,
               summary = $2,
               content = $3,
               updated_at = CURRENT_TIMESTAMP

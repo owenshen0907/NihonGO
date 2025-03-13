@@ -89,7 +89,7 @@ const initDb = async () => {
       );
     `);
         console.log("语法学习日志表创建成功。");
-        // 创建语法学习日志表 (notes)
+        // 创建语法学习笔记表 (notes)
         await client.query(`
             CREATE TABLE IF NOT EXISTS notes (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),  -- 自动生成 UUID
