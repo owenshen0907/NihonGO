@@ -31,7 +31,7 @@
 }
 
 .arrowIcon {
-    color: #bbb;  /* 较浅颜色 */
+    color: #bbb;
     font-size: 0.9rem;
     cursor: pointer;
     user-select: none;
@@ -50,7 +50,7 @@
 .menuIcon {
     font-size: 1rem;
     cursor: pointer;
-    color: #bbb;  /* 较浅颜色 */
+    color: #bbb;
 }
 
 .menuIcon:hover {
@@ -59,7 +59,7 @@
 
 .optionMenu {
     position: absolute;
-    top: 100%;  /* 紧贴在图标下方 */
+    top: 100%;
     right: 0;
     margin-top: 4px;
     background: #fff;
@@ -67,7 +67,7 @@
     border-radius: 4px;
     padding: 0.3rem;
     z-index: 10;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
 .menuItem {
@@ -83,4 +83,6 @@
 
 .childList {
     margin-top: 0.3rem;
+    list-style: none;
+    padding: 0;
 }

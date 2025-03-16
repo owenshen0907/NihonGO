@@ -8,22 +8,27 @@ import AddNoteButton from '@/app/components/AddNoteButton';
 interface NoteCardProps {
     note: NoteItem;
     isGrammar?: boolean;
+    selected: boolean; // 新增受控属性
     onUpdateExtension: (noteId: string, newExtension: any) => void;
     // 用来将该笔记的选中状态传递给父组件
     onSelectChange?: (noteId: string, selected: boolean) => void;
 }
-function NoteCard({ note, isGrammar, onUpdateExtension, onSelectChange }: NoteCardProps) {
+function NoteCard({ note, isGrammar,selected, onUpdateExtension, onSelectChange }: NoteCardProps) {
     // 默认设为选中（true）
-    const [selected, setSelected] = useState(true);
-
+    // const [selected, setSelected] = useState(true);
+    //
+    // const handleToggleSelect = () => {
+    //     const newSelected = !selected;
+    //     setSelected(newSelected);
+    //     if (onSelectChange) {
+    //         onSelectChange(note.id, newSelected);
+    //     }
+    // };
     const handleToggleSelect = () => {
-        const newSelected = !selected;
-        setSelected(newSelected);
         if (onSelectChange) {
-            onSelectChange(note.id, newSelected);
+            onSelectChange(note.id, !selected);
         }
     };
-
     return (
         <div className={styles.card}>
             <div className={styles.cardGrid}>
@@ -176,6 +181,7 @@ export default function NoteArea({ noteData, pageId }: NoteAreaProps) {
                             <NoteCard
                                 key={index}
                                 note={note}
+                                selected={selectedWordIds.includes(note.id)}  // 传入受控状态
                                 onUpdateExtension={handleUpdateExtension}
                                 onSelectChange={handleWordSelectChange}
                             />
@@ -204,6 +210,7 @@ export default function NoteArea({ noteData, pageId }: NoteAreaProps) {
                                 key={index}
                                 note={note}
                                 isGrammar
+                                selected={selectedGrammarIds.includes(note.id)}
                                 onUpdateExtension={handleUpdateExtension}
                                 onSelectChange={handleGrammarSelectChange}
                             />

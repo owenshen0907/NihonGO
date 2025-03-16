@@ -63,11 +63,10 @@ export function isGrammarNote(item: NoteItem): item is GrammarNote {
 /** 通用笔记接口：适用于存储用户自行编辑的综合学习笔记 */
 export interface CommonNote {
     id: string;
-    title: string;               // 笔记标题，必填
-    directory?: string;          // 当前笔记所属目录（例如“语法”、“词汇”等）
-    parent_directory?: string;   // 上级目录名称（支持多级目录）
+    title: string;               // 笔记标题，同时作为目录名称（必填）
+    parent_id?: string;          // 父级笔记的 id，若为空则为根目录
     summary?: string;            // 概述说明
-    content: string;             // 详细内容，假设存储 Markdown 文本
+    content: string;             // 详细内容（Markdown 格式）
     tags?: string;               // 标签，多个标签以逗号分隔
     comments?: Array<{          // 评论反馈，每条评论包含作者、时间、内容等
         author: string;
@@ -77,7 +76,7 @@ export interface CommonNote {
     created_at: string;
     updated_at: string;
     update_log?: string;
-    user_id: string;
+    user_id: string;             // 用户ID，每个用户的数据独立
     is_public: boolean;
 }
 

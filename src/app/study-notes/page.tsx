@@ -1,16 +1,28 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
+import { useRouter, useSearchParams } from 'next/navigation';
 import styles from './studyNotes.module.css';
 
-// 动态引入子页面组件
 const RecommendNotes = dynamic(() => import('./recommend/page'));
 const LatestNotes = dynamic(() => import('./latest/page'));
 const CommonNotes = dynamic(() => import('./common/page'));
 
 export default function StudyNotesPage() {
-    // 默认选中“推荐”页面
-    const [selectedTab, setSelectedTab] = useState<'recommend' | 'latest' | 'common'>('recommend');
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+    // 从 URL query 参数中获取 tab 值，默认为 'recommend'
+    const initialTab = (searchParams.get('tab') as 'recommend' | 'latest' | 'common') || 'recommend';
+    const [selectedTab, setSelectedTab] = useState<'recommend' | 'latest' | 'common'>(initialTab);
+
+    // 当选项发生变化时更新 URL query 参数
+    useEffect(() => {
+        // 获取当前路径
+        const currentPath = window.location.pathname;
+        // 更新 URL 参数（使用 router.replace 更新而不刷新页面）
+        router.replace(`${currentPath}?tab=${selectedTab}`);
+    }, [selectedTab, router]);
 
     const renderContent = () => {
         switch (selectedTab) {
@@ -27,7 +39,7 @@ export default function StudyNotesPage() {
 
     return (
         <main className={styles.mainContainer}>
-            {/* 顶部导航区域：标题和页面切换按钮在同一行 */}
+            {/* 顶部导航区域：标题和页面切换按钮 */}
             <div className={styles.headerRow}>
                 <div className={styles.functionSelect}>
                     <span className={styles.navItem}>学习笔记</span>
@@ -54,8 +66,10 @@ export default function StudyNotesPage() {
                     </button>
                 </div>
             </div>
-            {/* 笔记内容区域 */}
-            <div className={styles.contentArea}>{renderContent()}</div>
+            {/* 内容区域 */}
+            <div className={styles.contentArea}>
+                {renderContent()}
+            </div>
         </main>
     );
 }

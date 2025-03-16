@@ -12,15 +12,15 @@ export default function CommonNotesPage() {
     const [loading, setLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
 
-    // 从 sessionStorage 获取当前用户（示例）
-    const userData =
-        typeof window !== 'undefined'
-            ? JSON.parse(sessionStorage.getItem('userData') || '{}')
-            : {};
+    // 从 sessionStorage 获取当前用户
+    const userData = typeof window !== 'undefined'
+        ? JSON.parse(sessionStorage.getItem('userData') || '{}')
+        : {};
     const userId = userData.name || 'defaultUser';
 
-    useEffect(() => {
-        // 使用 POST 请求获取通用笔记（noteType 固定为 'common'）
+    // 刷新数据的函数
+    const refreshNotes = () => {
+        setLoading(true);
         fetch('/api/notes/queryNotes', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -31,6 +31,8 @@ export default function CommonNotesPage() {
                 setNotes(data);
                 if (data.notes.length > 0) {
                     setSelectedNote(data.notes[0]);
+                } else {
+                    setSelectedNote(null);
                 }
                 setLoading(false);
             })
@@ -38,9 +40,11 @@ export default function CommonNotesPage() {
                 console.error('Fetch common notes error', err);
                 setLoading(false);
             });
-    }, [userId]);
+    };
 
-    if (loading) return <div>加载中...</div>;
+    useEffect(() => {
+        refreshNotes();
+    }, [userId]);
 
     // 当保存编辑后调用更新接口
     const handleUpdateNote = (updatedNote: CommonNote) => {
@@ -58,7 +62,7 @@ export default function CommonNotesPage() {
             .then((data) => {
                 if (data.note) {
                     setSelectedNote(data.note);
-                    // 此处可以根据需要刷新整个 notes 数据
+                    refreshNotes();
                 } else {
                     console.error('更新失败', data);
                 }
@@ -70,6 +74,8 @@ export default function CommonNotesPage() {
             });
     };
 
+    if (loading) return <div>加载中...</div>;
+
     return (
         <div className={styles.container}>
             <CommonLeftPanel
@@ -79,6 +85,7 @@ export default function CommonNotesPage() {
                     setIsEditing(false);
                 }}
                 onEdit={() => setIsEditing(true)}
+                refreshNotes={refreshNotes}  // 传入刷新回调
             />
             <CommonContentPanel
                 note={selectedNote}

@@ -89,23 +89,24 @@ const initDb = async () => {
       );
     `);
         console.log("语法学习日志表创建成功。");
+
         // 创建语法学习笔记表 (notes)
         await client.query(`
             CREATE TABLE IF NOT EXISTS notes (
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),  -- 自动生成 UUID
-                title TEXT,                -- 笔记标题，可为空
-                directory TEXT,            -- 当前笔记所属目录名称
-                parent_directory TEXT NOT NULL,  -- 上级目录名称（必填）
-                summary TEXT,              -- 概述
-                content TEXT,              -- 笔记详细内容（Markdown 格式）
-                tags TEXT,                 -- 标签，逗号分隔
+                title TEXT NOT NULL,                -- 笔记标题，同时作为目录显示的名称
+                parent_id UUID,                     -- 自引用，指向父笔记的 id（NULL 表示根目录）
+                summary TEXT,                       -- 概述说明
+                content TEXT,                       -- 详细内容（Markdown 格式）
+                tags TEXT,                          -- 标签，逗号分隔
                 comments JSONB DEFAULT '[]'::jsonb,  -- 评论反馈，存储评论数组
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                update_log TEXT,           -- 更新内容说明
-                user_id VARCHAR(50) NOT NULL,  -- 用户ID，必填，关联用户信息表
+                update_log TEXT,                    -- 更新内容说明
+                user_id VARCHAR(50) NOT NULL,       -- 用户ID，必填
                 is_public BOOLEAN DEFAULT false,
-                FOREIGN KEY (user_id) REFERENCES user_info(user_id)
+                FOREIGN KEY (user_id) REFERENCES user_info(user_id),
+                FOREIGN KEY (parent_id) REFERENCES notes(id) ON DELETE SET NULL
                 );
 `);
         console.log("笔记表创建成功。");

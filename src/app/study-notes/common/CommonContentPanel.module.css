@@ -7,6 +7,10 @@
 }
 
 .header {
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 10;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -30,7 +34,12 @@
     width: 100%;
 }
 
-.editButton {
+.headerButtons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.editButton, .printButton {
     background-color: transparent;
     border: 1px solid #0070f3;
     color: #0070f3;
@@ -40,7 +49,7 @@
     font-size: 0.9rem;
 }
 
-.editButton:hover {
+.editButton:hover, .printButton:hover {
     background-color: #0070f3;
     color: #fff;
 }
@@ -74,12 +83,6 @@
     font-size: 1rem;
     resize: vertical;
     min-height: 200px;
-}
-
-.noteContent {
-    font-size: 1rem;
-    line-height: 1.6;
-    margin-bottom: 2rem;
 }
 
 .editButtons {
