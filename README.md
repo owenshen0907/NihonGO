@@ -52,13 +52,13 @@
 
 
 
-```markdown
+
 # 安装
 
 ## 1. 克隆仓库
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/owenshen0907/NihonGO.git
 ```
 
 ## 2. 进入项目目录
