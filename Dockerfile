@@ -18,9 +18,7 @@ RUN apk add --no-cache \
     bash
 
 # 拷贝 package.json 和 lock 文件
-COPY package*.json ./
-
-# 安装依赖（包含 devDependencies）
+COPY package.json package-lock.json* ./
 RUN npm install
 
 # 拷贝完整源码
