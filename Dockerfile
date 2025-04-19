@@ -1,5 +1,8 @@
 FROM node:18.20.7-alpine
 LABEL authors="shenting"
+# 改用阿里源提高稳定性
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
+
 # 安装基础构建工具
 RUN apk add --no-cache \
     python3 \
