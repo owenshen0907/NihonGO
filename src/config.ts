@@ -3,12 +3,12 @@
 // config({ path: '.env.local' });
 // 新增 Casdoor 配置
 export const CASDOOR_CONFIG = {
-    endpoint: process.env.CASDOOR_ENDPOINT || "https://your-casdoor-domain",
+    endpoint: process.env.CASDOOR_ENDPOINT || "http://your-casdoor-domain",
     clientId: process.env.CASDOOR_CLIENT_ID || "your_client_id",
     clientSecret: process.env.CASDOOR_CLIENT_SECRET || "your_client_secret",
     appName: process.env.CASDOOR_APP_NAME || "your_app_name",
     orgName: process.env.CASDOOR_ORG_NAME || "your_org_name",
-    redirectUri: process.env.CASDOOR_REDIRECT_URI || "https://your-domain.com/api/auth/callback",
+    redirectUri: process.env.CASDOOR_REDIRECT_URI || "http://your-domain.com/api/auth/callback",
 };
 
 

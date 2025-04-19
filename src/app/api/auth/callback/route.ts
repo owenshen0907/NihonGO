@@ -102,6 +102,7 @@ export async function GET(request: Request) {
         const headers = request.headers;
         const host = headers.get('x-forwarded-host') || headers.get('host');
         const protocol = headers.get('x-forwarded-proto') || 'http';
+        console.log('⚠️ redirect protocol resolved as:', protocol);
 
         const redirectUrl = `${protocol}://${host}/`;
 
