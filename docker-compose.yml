@@ -6,6 +6,7 @@ services:
     container_name: nihongo
     ports:
       - "3000:3000"
-    environment:
-      - NODE_ENV=production
-    restart: unless-stopped
+    volumes:
+      - ./config/.env.local:/app/.env.local:ro
+    working_dir: /app
+    command: npm run start
