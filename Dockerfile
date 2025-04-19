@@ -1,34 +1,26 @@
 FROM node:18.20.7-alpine
 LABEL authors="shenting"
 
-# 设置工作目录
 WORKDIR /app
 
-# 使用阿里源加速
+# 使用阿里源加速（可选）
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 
-# 安装构建依赖
-RUN apk add --no-cache \
-    python3 \
-    make \
-    g++ \
-    openssl \
-    libpq \
-    postgresql-libs \
-    git \
-    bash
+# 安装依赖工具
+RUN apk add --no-cache python3 make g++ openssl libpq postgresql-libs git bash
 
-# 拷贝依赖清单
-COPY package.json yarn.lock ./
+# 复制依赖声明并安装
+COPY package.json package-lock.json* ./
+RUN npm install --legacy-peer-deps
 
-# 安装依赖
-RUN yarn install --frozen-lockfile
-
-# 拷贝代码
+# 复制全部代码
 COPY . .
 
-# 验证 ts-node 是否存在（调试用）
-RUN node -p "require('ts-node/package.json').version"
+# 构建生产版本（如果是 next.js）
+RUN npm run build
 
-# 默认运行命令（开发环境）
-CMD ["yarn", "dev"]
+# 切换为生产模式
+ENV NODE_ENV=production
+
+# 启动命令
+CMD ["npm", "run", "start"]
