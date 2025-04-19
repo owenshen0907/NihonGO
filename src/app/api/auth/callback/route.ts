@@ -99,11 +99,16 @@ export async function GET(request: Request) {
             await client.end();
         }
 
-        // 设置登录 Cookie（建议使用 httpOnly、secure 等标志）
-        const response = NextResponse.redirect(new URL('/', request.url));
+        const headers = request.headers;
+        const host = headers.get('x-forwarded-host') || headers.get('host');
+        const protocol = headers.get('x-forwarded-proto') || 'http';
+
+        const redirectUrl = `${protocol}://${host}/`;
+
+        const response = NextResponse.redirect(redirectUrl);
         response.cookies.set('sessionToken', accessToken, { httpOnly: true, secure: true });
         response.cookies.set('userId', userId, { httpOnly: true, secure: true });
-        console.log('登录成功，已设置 Cookie，重定向到首页');
+        console.log('登录成功，已设置 Cookie，重定向到首页：', redirectUrl);
         return response;
     } catch (error) {
         console.error('认证回调过程中出现错误：', error);
