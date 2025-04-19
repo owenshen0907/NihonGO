@@ -16,7 +16,7 @@ RUN apk add --no-cache \
     postgresql-libs \
     git \
     bash
-
+ENV NODE_ENV=development
 # 拷贝 package.json 和 lock 文件
 COPY package.json package-lock.json* ./
 RUN npm install
