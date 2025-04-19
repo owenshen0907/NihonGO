@@ -1,15 +1,13 @@
-# 使用稳定且轻量的 Node.js Alpine 镜像
 FROM node:18.20.7-alpine
-
-LABEL author="shenting"
+LABEL authors="shenting"
 
 # 设置工作目录
 WORKDIR /app
 
-# 改用阿里源提升依赖下载速度
+# 使用阿里源加速
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 
-# 安装必要构建工具（支持 pg / ts-node 等依赖编译）
+# 安装构建依赖
 RUN apk add --no-cache \
     python3 \
     make \
@@ -20,23 +18,17 @@ RUN apk add --no-cache \
     git \
     bash
 
-# 设置开发环境，确保 devDependencies 被安装
-ENV NODE_ENV=development
+# 拷贝依赖清单
+COPY package.json yarn.lock ./
 
-# 复制依赖定义文件
-COPY package.json package-lock.json* ./
+# 安装依赖
+RUN yarn install --frozen-lockfile
 
-# 安装所有依赖（包括 devDependencies）
-RUN npm install --include=dev
-
-# 复制项目全部文件
+# 拷贝代码
 COPY . .
 
-# 显示 ts-node 是否成功安装（用于调试）
-RUN ls -la node_modules/.bin && node -p "require('ts-node/package.json').version"
+# 验证 ts-node 是否存在（调试用）
+RUN node -p "require('ts-node/package.json').version"
 
-# 暴露端口（默认 Next.js）
-EXPOSE 3000
-
-# 启动命令（先初始化 DB，再启动 Dev 服务器）
-CMD ["npm", "run", "dev"]
+# 默认运行命令（开发环境）
+CMD ["yarn", "dev"]
