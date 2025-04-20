@@ -101,9 +101,9 @@ export async function GET(request: Request) {
 
         const headers = request.headers;
         const host = headers.get('x-forwarded-host') || headers.get('host');
-        // const protocol = headers.get('x-forwarded-proto') || 'http';
+        const protocol = headers.get('x-forwarded-proto') || 'http';
         // 暂时强制http，等后面申请好证书再换https
-        const protocol = 'http'
+        // const protocol = 'http'
         console.log('⚠️ redirect protocol resolved as:', protocol);
 
         const redirectUrl = `${protocol}://${host}/`;

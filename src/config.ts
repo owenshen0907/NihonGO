@@ -14,9 +14,9 @@ export const CASDOOR_CONFIG = {
 
 export const configurations: Record<string, { apiUrl: string, apiKey: string, model: string, systemMessage?: string }> = {
     STUDY_ASSISTANT: {
-        apiUrl: process.env.OPENAI_API_URL || "【可以设置固定值】还可以设置STEP_API_URL/X_API_URL",
-        apiKey: process.env.OPENAI_API_KEY || "【可以设置固定值】还可以设置STEP_API_KEY/X_API_KEY",
-        model: "gpt-4o-mini",
+        apiUrl: process.env.STEP_API_URL || "【可以设置固定值】还可以设置STEP_API_URL/X_API_URL",
+        apiKey: process.env.STEP_API_KEY || "【可以设置固定值】还可以设置STEP_API_KEY/X_API_KEY",
+        model: "step-2-mini",
         systemMessage:"\t1.\t中日互译\n" +
             "\t•\t若用户输入为中文：完整翻译为日语。\n" +
             "\t•\t若用户输入为日语：完整翻译为中文。\n" +
@@ -254,9 +254,9 @@ export const configurations: Record<string, { apiUrl: string, apiKey: string, mo
             "}\n",
     },
     GENERATE_GRAMMAR_EXTENSION: {
-        apiUrl: process.env.OPENAI_API_URL || "【可以设置固定值】还可以设置STEP_API_URL/X_API_URL",
-        apiKey: process.env.OPENAI_API_KEY || "【可以设置固定值】还可以设置STEP_API_KEY/X_API_KEY",
-        model: "gpt-4o-mini",
+        apiUrl: process.env.STEP_API_URL || "【可以设置固定值】还可以设置STEP_API_URL/X_API_URL",
+        apiKey: process.env.STEP_API_KEY || "【可以设置固定值】还可以设置STEP_API_KEY/X_API_KEY",
+        model: "step-2-mini",
         systemMessage: "你是一个日语语法数据构造助手。\n" +
             "你的任务是根据用户提供的语法表达（包括 grammar_formula 和 explanation），生成一个符合 JSON 结构的语法词条。请严格按照以下要求生成 JSON：\n" +
             "\t1.\t基本信息\n" +
